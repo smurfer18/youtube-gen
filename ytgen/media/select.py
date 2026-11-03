@@ -28,7 +28,7 @@ from ytgen.media import library, semantic, sources
 from ytgen.media import license as lic
 from ytgen.models import Asset, GraphicItem, GraphicSpec, Plan, Script
 from ytgen.util import log, net
-from ytgen.util.text import STOPWORDS, keywords, norm_key
+from ytgen.util.text import STOPWORDS, keywords, kinetic_items, norm_key
 
 L = log.get("media")
 
@@ -348,7 +348,7 @@ def assign_media(plan: Plan, script: Script, settings: Settings, project_dir: Pa
         if pick is None:
             if sc.kind == "footage":
                 sc.kind = "kinetic"
-                kw = keywords(sc.text, 4) or [w for w in sc.text.split()[:4]]
+                kw = kinetic_items(sc.text) or keywords(sc.text, 3) or sc.text.split()[:3]
                 sc.graphic = GraphicSpec(type="kinetic", items=[GraphicItem(label=k) for k in kw])
             sc.needs_review = True
             sc.review_reason = "no licensed footage found"

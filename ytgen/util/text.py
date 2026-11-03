@@ -119,3 +119,31 @@ def truncate_words(text: str, n: int) -> str:
 
 def spoken_seconds(text: str, wpm: float = 155) -> float:
     return len(text.split()) / wpm * 60
+
+
+_MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December"
+
+
+def kinetic_items(text: str, limit: int = 3) -> list[str]:
+    """Words worth putting on screen for a typographic scene: dates, names, figures.
+    'In March 1965, Alexei Leonov opened a hatch' -> ['March 1965', 'Alexei Leonov', 'opened a hatch']"""
+    items: list[str] = []
+    for m in re.finditer(rf"\b(?:(?:{_MONTHS})\s+(?:\d{{1,2}},\s+)?\d{{4}}|\d{{4}})\b", text):
+        items.append(m.group(0))
+    for m in re.finditer(r"\b\d[\d,.]*\s*(?:%|percent|million|billion|thousand|kilometers|miles|feet|hours|days|minutes|seconds|kilograms)\b", text):
+        items.append(m.group(0))
+    for m in re.finditer(r"(?<![.!?]\s)(?<!^)\b([A-Z][a-zA-Z'’-]+(?:\s+(?:of\s+)?[A-Z][a-zA-Z'’-]+)+|[A-Z][a-z]{3,})\b", text):
+        w = m.group(1)
+        if w.split()[0].lower() in STOPWORDS or re.fullmatch(_MONTHS, w):
+            continue
+        items.append(w)
+    out: list[str] = []
+    for it in items:
+        if not any(it.lower() in o.lower() or o.lower() in it.lower() for o in out):
+            out.append(it)
+    if len(out) < 2:  # few names/dates: the beat's shortest clause, verbatim
+        clauses = [c.strip() for c in re.split(r"[,.;:!?]", text) if len(c.split()) >= 2]
+        if clauses:
+            c = min(clauses, key=lambda x: len(x.split())).split()
+            out.append(" ".join(c if len(c) <= 6 else c[-5:]))
+    return out[:limit]
