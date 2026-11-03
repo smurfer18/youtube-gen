@@ -49,6 +49,8 @@ class InternetArchive:
             if not ok or status in ("uncertain", "rejected"):
                 continue
             ident = doc["identifier"]
+            if ident.lower().startswith(("youtube-", "yt-")) or "youtube" in str(doc.get("title", "")).lower():
+                continue  # re-uploads: the declared license cannot be verified
             creator = doc.get("creator") or "Internet Archive"
             creator = ", ".join(creator) if isinstance(creator, list) else creator
             desc = doc.get("description") or ""

@@ -117,7 +117,7 @@ class Selector:
 
         with ThreadPoolExecutor(len(self.sources) or 1) as ex:
             results = list(ex.map(one, self.sources))
-        results.append(library.search(query, 8))  # reuse what we already own
+        results.append([a for a in library.search(query, 8) if not a.generated])  # reuse what we own (never AI images)
         for res in results:
             for rank, a in enumerate(res):
                 a.score = score(a, query, rank, W, H, self.settings.vertical)
@@ -170,16 +170,20 @@ class Selector:
             return None
         a.duration = dur
         if dur <= max_len * 1.5:
-            return a if dur > 2 else None
-        start = dur * (0.15 + 0.4 * ((hash(a.id) % 100) / 100))
+            return a if dur > 2 and _video_ok(a.path, dur) else None
         out = Path(a.path).with_name(Path(a.path).stem + "_clip.mp4")
-        r = subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{start:.2f}", "-i", a.path, "-t", f"{max_len}",
-                            "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", str(out)], capture_output=True)
-        if r.returncode != 0 or not out.exists():
-            return None
-        Path(a.path).unlink(missing_ok=True)
-        a.path, a.duration = str(out), max_len
-        return a
+        base = (hash(a.id) % 100) / 100
+        for attempt in range(4):  # try several segments: skip leaders, flares, washed-out film
+            start = dur * (0.12 + 0.7 * ((base + 0.27 * attempt) % 1.0)) 
+            start = min(start, max(0.0, dur - max_len - 1))
+            r = subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{start:.2f}", "-i", a.path, "-t", f"{max_len}",
+                                "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", str(out)], capture_output=True)
+            if r.returncode == 0 and out.exists() and _video_ok(str(out), max_len):
+                Path(a.path).unlink(missing_ok=True)
+                a.path, a.duration = str(out), max_len
+                return a
+        out.unlink(missing_ok=True)
+        return None
 
     def _analyze(self, a: Asset, register: bool = True) -> Asset | None:
         if not a.license_status:
@@ -187,6 +191,8 @@ class Selector:
         if not lic.usable(a, self.settings.allow_uncertain_licenses):
             return None
         if a.kind == "video":
+            if not _video_ok(a.path, a.duration or 18.0):
+                return None
             if register:
                 a.sha1 = library.file_sha1(a.path)
                 library.register(a)
@@ -288,6 +294,21 @@ class Selector:
         if a is not None:
             a = self._analyze(a)
         return a
+
+
+def _video_ok(path: str, dur: float, samples: int = 6) -> bool:
+    """Reject clips that are mostly flat (leaders, blown-out or black film): median frame contrast."""
+    stds = []
+    for k in range(samples):
+        t = dur * (k + 0.5) / samples
+        r = subprocess.run(["ffmpeg", "-v", "error", "-ss", f"{t:.2f}", "-i", path, "-frames:v", "1", "-vf", "scale=64:36",
+                            "-f", "rawvideo", "-pix_fmt", "gray", "-"], capture_output=True)
+        if r.returncode == 0 and r.stdout:
+            stds.append(float(np.frombuffer(r.stdout, np.uint8).astype(np.float32).std()))
+    if len(stds) < samples // 2:
+        return False
+    flat = sum(1 for x in stds if x < 24)
+    return flat <= max(0, int(len(stds) * 0.2))  # at most ~20% of the clip may be flat
 
 
 def _title_key(t: str) -> str:

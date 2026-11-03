@@ -114,7 +114,21 @@ class Overlays:
             if xf > x0:
                 d.rectangle((x0, 0, xf, h), fill=th.color("accent", 230))
 
+    def _draw_ai_badge(self, frame: Image.Image, t: float) -> None:
+        """Transparency: any AI-generated image on screen is labelled as such."""
+        sc = next((s for s in self.plan.scenes if s.start <= t < s.end), None)
+        a = self.plan.assets.get(sc.asset_id) if sc and sc.asset_id else None
+        if not (a and a.generated and sc.kind in ("footage", "chapter", "title", "outro")):
+            return
+        if getattr(self, "_ai", None) is None:
+            th = self.th
+            txt = fx.text_layer("AI ILLUSTRATION", th.font("body", 20), (255, 255, 255, 230), tracking=0.12)
+            self._ai = fx.rounded((txt.width + th.s(24), txt.height + th.s(10)), th.s(6), (0, 0, 0, 150))
+            self._ai.alpha_composite(txt, (th.s(12), th.s(5)))
+        fx.paste(frame, self._ai, (self.th.W - self._ai.width - self.th.s(40), self.th.H - self._ai.height - self.th.s(40)))
+
     def draw(self, frame: Image.Image, t: float) -> None:
+        self._draw_ai_badge(frame, t)
         self._draw_progress(frame, t)
         self._draw_lower_third(frame, t)
         self._draw_banner(frame, t)
