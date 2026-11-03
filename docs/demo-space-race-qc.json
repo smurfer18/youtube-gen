@@ -1,0 +1,579 @@
+{
+  "verdict": "pass",
+  "stats": {
+    "duration": 1177.75,
+    "resolution": "1920x1080",
+    "av_drift": 0.051,
+    "loudness_lufs": -14.0,
+    "true_peak_db": -1.2
+  },
+  "counts": {
+    "info": 94
+  },
+  "issues": [
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 1: fallback query or low match score",
+      "time": 5.02
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 6: fallback query or low match score",
+      "time": 30.0
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 22: fallback query or low match score",
+      "time": 102.59
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 23: fallback query or low match score",
+      "time": 107.53
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 24: fallback query or low match score",
+      "time": 113.56
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 25: flagged",
+      "time": 118.67
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 26: fallback query or low match score",
+      "time": 124.15
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 30: fallback query or low match score",
+      "time": 143.71
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 31: no licensed footage found",
+      "time": 147.19
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 34: fallback query or low match score",
+      "time": 162.22
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 36: fallback query or low match score",
+      "time": 170.94
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 38: fallback query or low match score",
+      "time": 180.63
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 40: fallback query or low match score",
+      "time": 189.87
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 48: fallback query or low match score",
+      "time": 230.66
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 50: fallback query or low match score",
+      "time": 239.77
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 51: fallback query or low match score",
+      "time": 244.81
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 52: fallback query or low match score",
+      "time": 249.82
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 53: no licensed footage found",
+      "time": 256.06
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 54: no licensed footage found",
+      "time": 261.52
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 55: no licensed footage found",
+      "time": 267.76
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 56: no licensed footage found",
+      "time": 273.35
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 58: fallback query or low match score",
+      "time": 286.04
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 61: fallback query or low match score",
+      "time": 303.38
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 63: fallback query or low match score",
+      "time": 313.8
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 64: fallback query or low match score",
+      "time": 318.02
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 65: fallback query or low match score",
+      "time": 322.93
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 67: fallback query or low match score",
+      "time": 337.81
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 69: fallback query or low match score",
+      "time": 344.03
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 70: fallback query or low match score",
+      "time": 345.81
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 73: fallback query or low match score",
+      "time": 364.49
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 74: no licensed footage found",
+      "time": 368.69
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 75: no licensed footage found",
+      "time": 372.65
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 77: fallback query or low match score",
+      "time": 382.69
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 81: fallback query or low match score",
+      "time": 403.88
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 82: fallback query or low match score",
+      "time": 408.95
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 84: no licensed footage found",
+      "time": 423.26
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 85: fallback query or low match score",
+      "time": 426.92
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 86: fallback query or low match score",
+      "time": 431.28
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 87: fallback query or low match score",
+      "time": 435.3
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 89: no licensed footage found",
+      "time": 447.27
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 90: no licensed footage found",
+      "time": 452.92
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 91: no licensed footage found",
+      "time": 458.81
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 92: no licensed footage found",
+      "time": 464.28
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 93: no licensed footage found",
+      "time": 470.1
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 94: no licensed footage found",
+      "time": 476.58
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 96: no licensed footage found",
+      "time": 487.27
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 97: no licensed footage found",
+      "time": 492.59
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 98: no licensed footage found",
+      "time": 497.05
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 99: no licensed footage found",
+      "time": 502.26
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 105: fallback query or low match score",
+      "time": 532.8
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 106: fallback query or low match score",
+      "time": 537.97
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 107: fallback query or low match score",
+      "time": 542.8
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 108: fallback query or low match score",
+      "time": 548.81
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 109: fallback query or low match score",
+      "time": 553.53
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 110: fallback query or low match score",
+      "time": 558.7
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 112: fallback query or low match score",
+      "time": 574.18
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 117: fallback query or low match score",
+      "time": 594.42
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 119: fallback query or low match score",
+      "time": 609.47
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 127: fallback query or low match score",
+      "time": 648.07
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 128: fallback query or low match score",
+      "time": 652.2
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 132: fallback query or low match score",
+      "time": 668.0
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 133: fallback query or low match score",
+      "time": 673.15
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 137: fallback query or low match score",
+      "time": 696.03
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 164: fallback query or low match score",
+      "time": 839.38
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 171: no licensed footage found",
+      "time": 875.67
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 172: fallback query or low match score",
+      "time": 879.32
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 173: fallback query or low match score",
+      "time": 882.6
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 174: fallback query or low match score",
+      "time": 889.2
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 178: fallback query or low match score",
+      "time": 908.95
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 180: fallback query or low match score",
+      "time": 919.2
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 185: fallback query or low match score",
+      "time": 945.55
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 187: fallback query or low match score",
+      "time": 955.5
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 192: no licensed footage found",
+      "time": 980.49
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 195: fallback query or low match score",
+      "time": 991.39
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 197: fallback query or low match score",
+      "time": 1005.44
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 201: fallback query or low match score",
+      "time": 1026.28
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 202: fallback query or low match score",
+      "time": 1031.14
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 206: fallback query or low match score",
+      "time": 1053.1
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 209: fallback query or low match score",
+      "time": 1068.53
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 210: fallback query or low match score",
+      "time": 1072.17
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 214: fallback query or low match score",
+      "time": 1090.09
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 215: no licensed footage found",
+      "time": 1095.16
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 216: no licensed footage found",
+      "time": 1100.72
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 217: no licensed footage found",
+      "time": 1105.47
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 218: no licensed footage found",
+      "time": 1111.06
+    },
+    {
+      "level": "info",
+      "check": "review",
+      "message": "scene 226: no licensed footage found",
+      "time": 1155.04
+    },
+    {
+      "level": "info",
+      "check": "variety",
+      "message": "4+ photo-card scenes in a row",
+      "time": 25.71
+    },
+    {
+      "level": "info",
+      "check": "variety",
+      "message": "4+ photo-card scenes in a row",
+      "time": 524.15
+    },
+    {
+      "level": "info",
+      "check": "variety",
+      "message": "4+ photo-card scenes in a row",
+      "time": 553.53
+    },
+    {
+      "level": "info",
+      "check": "variety",
+      "message": "4+ photo-card scenes in a row",
+      "time": 734.2
+    },
+    {
+      "level": "info",
+      "check": "variety",
+      "message": "4+ photo-card scenes in a row",
+      "time": 800.53
+    },
+    {
+      "level": "info",
+      "check": "variety",
+      "message": "4+ photo-card scenes in a row",
+      "time": 866.97
+    },
+    {
+      "level": "info",
+      "check": "variety",
+      "message": "4+ photo-card scenes in a row",
+      "time": 976.32
+    },
+    {
+      "level": "info",
+      "check": "variety",
+      "message": "4+ photo-card scenes in a row",
+      "time": 1031.14
+    }
+  ]
+}

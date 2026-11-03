@@ -54,7 +54,7 @@ Output lands in `projects/<date>-<slug>/output/`: the MP4, `thumbnail_A/B/C.jpg`
   captions, decode errors, A/V sync, black and frozen frames, silences and loudness.
 * **Formats:** 16:9, 9:16 and 1:1; 720p to 4K (`--resolution 2160`); `--preview` drafts.
 
-See [docs/production.md](docs/production.md) for the research behind each choice.
+See [docs/production.md](docs/production.md) for the research behind each choice and [docs/demo.md](docs/demo.md) for the 20-minute demo.
 
 ## Pipeline
 
