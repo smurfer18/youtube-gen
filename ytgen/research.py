@@ -55,19 +55,34 @@ _SKIP = {"see also", "references", "notes", "external links", "further reading",
          "sources", "citations", "footnotes", "gallery", "in popular culture", "legacy and media"}
 
 
+def _get(params: dict, lang: str) -> dict:
+    """Paced Wikipedia API call; waits out a 429 once (Wikipedia asks for <1 req/s bursts)."""
+    import time
+
+    for attempt in range(3):
+        net.pace(f"{lang}.wikipedia.org", 1.0)
+        try:
+            return net.get_json(API.format(lang=lang), params=params, timeout=25)
+        except net.Throttled as e:
+            if attempt == 2:
+                raise
+            time.sleep(min(60.0, e.retry_after + 1))
+    return {}
+
+
 def search_titles(query: str, lang: str = "en", limit: int = 3) -> list[str]:
-    d = net.get_json(API.format(lang=lang), params={
+    d = _get({
         "action": "query", "list": "search", "srsearch": query, "srlimit": limit,
         "format": "json", "srprop": "",
-    })
+    }, lang)
     return [h["title"] for h in d.get("query", {}).get("search", [])]
 
 
 def fetch_article(title: str, lang: str = "en") -> Article:
-    d = net.get_json(API.format(lang=lang), params={
+    d = _get({
         "action": "query", "prop": "extracts|info", "titles": title, "explaintext": 1,
         "exsectionformat": "wiki", "inprop": "url", "redirects": 1, "format": "json",
-    })
+    }, lang)
     page = next(iter(d["query"]["pages"].values()))
     text = page.get("extract", "")
     url = page.get("fullurl", f"https://{lang}.wikipedia.org/wiki/{title.replace(' ', '_')}")

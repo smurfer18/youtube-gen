@@ -17,8 +17,9 @@ pip install -e .            # Python 3.10+, plus ffmpeg on PATH
 ytgen doctor                # checks ffmpeg, keys, network
 
 ytgen make "The Apollo 13 rescue" --minutes 8            # long-form documentary
+ytgen make "The fall of Constantinople" --minutes 25 --preset cinematic
 ytgen make "Why octopuses are so smart" --format short    # 9:16 Short
-ytgen make --script examples/apollo13.md --theme orbit    # your own script
+ytgen make --script examples/space_race.md --theme orbit  # your own script (20-minute demo)
 ```
 
 Output lands in `projects/<date>-<slug>/output/`: the MP4, `thumbnail_A/B/C.jpg`,
@@ -36,6 +37,24 @@ Output lands in `projects/<date>-<slug>/output/`: the MP4, `thumbnail_A/B/C.jpg`
 | **Original sound** | A procedural score with a mood per chapter (tension, wonder, somber, driving, uplifting, neutral) and synthesized whooshes, pops, ticks, impacts and risers on the edit's cues. The voice chain is high-pass, compression and presence. Music ducks under the voice by sidechain, and two-pass loudness normalization brings the mix to −14 LUFS / −1.5 dBTP. |
 | **Storyboard before render** | `--stop-after storyboard` writes `storyboard/index.html`. It shows each scene's frame, narration, timing, source, license, alternatives and review flags. Edit `plan.json`, then `ytgen render`. |
 | **Ready to publish** | Title options, a description with valid YouTube chapters, sources and credits, tags, captions, A/B/C thumbnails, and an optional upload through the YouTube Data API with scheduling. |
+
+## Long-form studio
+
+* **15–60 minute films:** an outline-then-chapters writer, chapter-aligned render chunks,
+  content-hash caching (edit one shot and only its chunk re-renders), retries, a
+  progress file, and per-chapter exports (`ytgen render P --chapters 4,5`).
+* **Editing presets** (`ytgen presets`): `documentary`, `storytelling`, `educational`,
+  `cinematic` (2.39:1 letterbox, handheld drift, light leaks) and `shorts`.
+* **Motion graphics:** the HyperFrames title sequence, a D3 globe that flies to every new
+  place, eight data-graphic types and ten transitions.
+* **Media intelligence:** CLIP semantic ranking, license classification with
+  `assets_manifest.json` and `CREDITS.md`, a shared media library, near-duplicate
+  detection, and an AI image fallback with a cost ledger and budget.
+* **Quality control:** `ytgen qc P` checks timeline, assets, licenses, repetition,
+  captions, decode errors, A/V sync, black and frozen frames, silences and loudness.
+* **Formats:** 16:9, 9:16 and 1:1; 720p to 4K (`--resolution 2160`); `--preview` drafts.
+
+See [docs/production.md](docs/production.md) for the research behind each choice.
 
 ## Pipeline
 
@@ -114,7 +133,12 @@ files.
 ```
 ytgen make [topic] [--script F] [--format long|short] [--minutes N] [--theme T] [--voice V]
            [--captions boxed|karaoke|pop|minimal] [--media a,b] [--channel NAME] [--stop-after STAGE]
-ytgen render PROJECT [--force STAGE…]     continue / re-render after edits
+ytgen render PROJECT [--force STAGE…] [--chapters 3,4] [--export-chapters]
+ytgen regen PROJECT --scene 42 [--asset ID | --query "new search"]   swap one shot
+ytgen qc PROJECT                         automated quality control
+ytgen library search "saturn v" | stats  shared media library
+ytgen presets                            editing presets
+ytgen drive PROJECT --folder ID          upload deliverables (stays inside that folder)
 ytgen batch topics.txt [--format short]  one video per line
 ytgen preview PROJECT --at 42.0          one frame as JPEG
 ytgen upload PROJECT [--privacy …] [--publish-at RFC3339]

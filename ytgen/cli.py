@@ -31,6 +31,8 @@ def _settings_from(args) -> dict:
             o[k] = v
     if getattr(args, "preset", None):
         o["preset_name"] = args.preset
+    if getattr(args, "rate", None):
+        o["voice_rate"] = args.rate
     if getattr(args, "x264", None):
         o["encoder_preset"] = args.x264
     if getattr(args, "ai_budget", None) is not None:
@@ -67,6 +69,7 @@ def _add_common(p: argparse.ArgumentParser) -> None:
     p.add_argument("--theme", help="visual theme or 'auto' (see `ytgen themes`)")
     p.add_argument("--voice", help="edge:<voice> | elevenlabs:<voice_id> | file:<narration.wav>")
     p.add_argument("--writer", help="auto | claude | extractive")
+    p.add_argument("--rate", help="narration speed, e.g. -6%% (Edge voices)")
     p.add_argument("--captions", choices=["boxed", "karaoke", "pop", "minimal"], help="caption style override")
     p.add_argument("--media", help="comma list: wikimedia,nasa,archive,openverse,pexels,pixabay,unsplash,smithsonian,local:/dir")
     p.add_argument("--ai-images", choices=["off", "pollinations", "openai", "replicate"], help="AI fallback when no footage fits")

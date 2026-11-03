@@ -677,7 +677,7 @@ class Quote(Graphic):
             fx.paste(f, self.mark, (self.W / 2, y - th.s(10)), opacity=pm, anchor="mb")
         else:
             x_first = (self.W - (self.lines[0].width if self.lines else 0)) / 2
-            fx.paste(f, self.mark, (min(self.W * 0.14, x_first - self.mark.width * 0.8), y - th.s(70)), opacity=pm)
+            fx.paste(f, self.mark, (min(self.W * 0.14, x_first - self.mark.width * 1.15), y - th.s(70)), opacity=pm)
         for i, l in enumerate(self.lines):
             p = fx.ease_out(fx.progress(lt, t0 + i * 0.22, 0.5))
             fx.paste(f, l, (self.W / 2, y + (1 - p) * th.s(16)), opacity=p, anchor="mt")
