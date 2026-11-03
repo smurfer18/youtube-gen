@@ -187,7 +187,7 @@ On December 21, 1968, a Saturn Five lifted off carrying Frank Borman, Jim Lovell
 It was only the second crewed Apollo flight, and the first time people would ride the Saturn Five. As the spacecraft coasted away, the crew became the first humans to see the whole Earth as a single round world, shrinking behind them.
 
 [[visual: Apollo 8 Moon surface from orbit]]
-Three days later, they slipped behind the Moon and out of radio contact with Earth. No humans had ever seen its far side with their own eyes. Apollo Eight orbited the Moon ten times.
+Three days later, they slipped behind the Moon and out of radio contact with Earth. No humans had ever seen its far side with their own eyes. Apollo Eight orbited the Moon ten times. It was the first crewed spacecraft ever to leave the grip of Earth's gravity and fall into the Moon's.
 
 [[visual: Earthrise Apollo 8]]
 On one of those orbits, the Earth rose over the lunar horizon: a small blue and white ball, floating alone in the black. Bill Anders grabbed a camera. The photograph became known as Earthrise.
@@ -207,7 +207,7 @@ Two more rehearsals followed. In March 1969, Apollo Nine tested the lunar module
 On July 16, 1969, Neil Armstrong, Buzz Aldrin and Michael Collins launched aboard Apollo Eleven. Four days later, Armstrong and Aldrin climbed into the lunar module Eagle and separated from Collins in the command module Columbia.
 
 [[visual: Apollo 11 launch crowd spectators]]
-An estimated one million people lined the highways and beaches near the launch site to watch the Saturn Five climb into the sky. In the United States alone, about twenty-five million people watched the launch on television.
+An estimated one million people lined the highways and beaches near the launch site to watch the Saturn Five climb into the sky. In the United States alone, about twenty-five million people watched the launch on television. It was broadcast live in thirty-three countries.
 
 [[visual: Apollo 11 lunar module Eagle descent]]
 As Eagle descended, alarms began to flash. Program alarm twelve-oh-two. Then twelve-oh-one. The guidance computer was overloaded. In Houston, a young engineer studied the codes and made the call. Keep going.
@@ -249,7 +249,7 @@ From a beeping sphere to human footprints on the Moon had taken less than twelve
 ## After the Race {mood=uplifting}
 
 [[visual: Soviet N1 rocket]]
-The Soviet Union had been building its own Moon rocket, the giant N1. All four of its launch attempts, between 1969 and 1972, ended in failure. No cosmonaut ever went to the Moon.
+The Soviet Union had been building its own Moon rocket, the giant N1. All four of its launch attempts, between 1969 and 1972, ended in failure. No cosmonaut ever went to the Moon. By one estimate from 1964, the Soviet Union's robotic Luna program alone was costing between six and ten billion dollars.
 
 [[visual: Luna 16 sample return]]
 Soviet robots kept exploring instead. In 1966, Luna Nine had made the first soft landing on the Moon and sent back pictures from its surface. In 1970, Luna Sixteen scooped up lunar soil and returned it to Earth, the first sample ever brought back by a robot.
