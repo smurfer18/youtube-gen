@@ -32,6 +32,7 @@ class Ledger:
         self.path = project_dir / "costs.json"
         self.budget = budget
         self.data = json.loads(self.path.read_text()) if self.path.exists() else {"entries": [], "total_usd": 0.0}
+        self.blocked: set[str] = set()
 
     @property
     def spent(self) -> float:
@@ -56,6 +57,8 @@ def style_prompt(query: str, theme: dict, vertical: bool) -> str:
 def generate(query: str, provider: str, dest_dir: Path, ledger: Ledger, theme: dict, W: int, H: int,
              seed: int = 0) -> Optional[Asset]:
     cost = PRICES.get(provider, 1.0)
+    if provider in ledger.blocked:
+        return None
     if not ledger.allow(cost):
         L.info("AI image skipped (budget %.2f USD reached)", ledger.budget)
         return None
@@ -65,7 +68,7 @@ def generate(query: str, provider: str, dest_dir: Path, ledger: Ledger, theme: d
         if provider == "pollinations":
             w, h = (1280, 720) if W >= H else (720, 1280)
             url = (f"https://image.pollinations.ai/prompt/{urllib.parse.quote(prompt)}"
-                   f"?width={w}&height={h}&nologo=true&seed={seed}&model=flux")
+                   f"?width={w}&height={h}&nologo=true&seed={seed}")  # default (free) model only
             net.download(url, dest, timeout=180)
             lic = "AI-generated (Pollinations.ai)"
         elif provider == "openai":
@@ -90,7 +93,11 @@ def generate(query: str, provider: str, dest_dir: Path, ledger: Ledger, theme: d
         else:
             raise ValueError(provider)
     except Exception as e:
-        L.warning("AI generation (%s) failed: %s", provider, e)
+        if "402" in str(e):  # the service wants payment: never pay implicitly, stop asking this run
+            ledger.blocked.add(provider)
+            L.warning("AI generation (%s) now requires payment; disabled for this run", provider)
+        else:
+            L.warning("AI generation (%s) failed: %s", provider, e)
         return None
     ledger.add(provider, prompt[:120], cost)
     return Asset(id=dest.stem, path=str(dest), provider=f"AI ({provider})", title=query, author="AI-generated",
