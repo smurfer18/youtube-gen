@@ -1,0 +1,17 @@
+name: pulse
+label: Pulse
+description: Punchy, saturated, high-energy. Poster-condensed type, electric yellow highlights and hot-pink accents. Built for Shorts and listicles.
+use: shorts, facts, lists, rankings, sports, pop culture
+palette: {bg: "#0B0B10", surface: "#16161F", ink: "#FFFFFF", muted: "#B8B8C8", accent: "#FFD60A", accent2: "#FF3D71", on_accent: "#0B0B10", chart_base: "#262636"}
+fonts:
+  display: {family: Anton, weight: 400, upper: true}
+  accent: {family: Montserrat, weight: 800}
+  body: {family: Montserrat, weight: 800}
+  numbers: {family: Anton, weight: 400}
+grade: {saturation: 1.22, contrast: 1.12, brightness: 1.0, tint: "#000000", tint_amount: 0.0}
+texture: {grain: 0.02, vignette: 0.45}
+background: {kind: gradient, glow: "#2a1240"}
+frame: {style: plain, border: 0.0, radius: 0.02, shadow: 0.6}
+captions: {style_long: karaoke, style_short: pop, size_long: 56, size_short: 104, box: "#0B0B10CC", ink: "#FFFFFF", highlight: accent}
+transitions: {default: zoom, duration: 0.24}
+motion: {kenburns: 1.25}

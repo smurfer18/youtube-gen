@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ytgen"
+version = "0.1.0"
+description = "Automatic faceless YouTube video generator: research, script, voice, licensed footage, motion graphics, captions, score, thumbnails and a ready-to-publish pack."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+  "pydantic>=2.6",
+  "PyYAML>=6.0",
+  "Pillow>=10.0",
+  "numpy>=1.26",
+  "requests>=2.31",
+  "edge-tts>=7.0",
+]
+
+[project.optional-dependencies]
+claude = ["anthropic>=1.0"]
+whisper = ["faster-whisper>=1.0"]
+web = ["fastapi>=0.110", "uvicorn>=0.29"]
+dev = ["pytest>=8"]
+all = ["anthropic>=1.0", "faster-whisper>=1.0", "fastapi>=0.110", "uvicorn>=0.29"]
+
+[project.scripts]
+ytgen = "ytgen.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["ytgen*"]
+
+[tool.setuptools.package-data]
+ytgen = ["themes/*.yaml", "web/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,17 @@
+name: orbit
+label: Orbit
+description: Deep-space navy with a slow star field, glowing cyan hairlines, a geometric grotesk and full-colour imagery with a cool grade.
+use: space, astronomy, science, technology, future, engineering
+palette: {bg: "#05070D", surface: "#0D1322", ink: "#EAF2FF", muted: "#8A9BB8", accent: "#3DDCFF", on_accent: "#04121A", chart_base: "#1A2438"}
+fonts:
+  display: {family: Space Grotesk, weight: 700}
+  accent: {family: Space Grotesk, weight: 500}
+  body: {family: Inter, weight: 600}
+  numbers: {family: Space Grotesk, weight: 700}
+grade: {saturation: 1.05, contrast: 1.08, brightness: 0.97, tint: "#0b2a4a", tint_amount: 0.10}
+texture: {grain: 0.035, vignette: 0.5}
+background: {kind: stars, glow: "#0f2747"}
+frame: {style: glow, border: 0.0025, crop_marks: false, shadow: 0.5}
+captions: {style_long: karaoke, style_short: pop, size_long: 54, size_short: 96, box: "#05070DCC", ink: "#FFFFFF", highlight: accent}
+transitions: {default: crossfade, duration: 0.5}
+motion: {kenburns: 1.0}

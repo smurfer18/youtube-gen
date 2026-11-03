@@ -1,0 +1,17 @@
+name: archive
+label: Archive
+description: Warm paper with soft fibre texture, sepia-toned prints, a serif display face and an oxblood accent. Calm, literary, timeless.
+use: history, ancient worlds, biographies, heritage, war history
+palette: {bg: "#ECE4D3", surface: "#F8F3E8", ink: "#1E1A15", muted: "#5F574B", accent: "#9E1B1F", on_accent: "#FFFFFF", chart_base: "#D3C8B2"}
+fonts:
+  display: {family: Playfair Display, weight: 800}
+  accent: {family: Playfair Display, weight: 600, italic: true}
+  body: {family: Inter, weight: 600}
+  numbers: {family: Playfair Display, weight: 800}
+grade: {saturation: 0.0, contrast: 1.06, brightness: 0.98, tint: "#6b4423", tint_amount: 0.32}
+texture: {grain: 0.05, vignette: 0.42}
+background: {kind: paper}
+frame: {style: print, border: 0.014, crop_marks: false, shadow: 0.45}
+captions: {style_long: boxed, style_short: pop, size_long: 50, size_short: 92, box: "#1E1A15E0", ink: "#FFFFFF", highlight: "#F2C14E"}
+transitions: {default: crossfade, duration: 0.6}
+motion: {kenburns: 0.8}

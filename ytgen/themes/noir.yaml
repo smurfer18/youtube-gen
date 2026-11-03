@@ -1,0 +1,17 @@
+name: noir
+label: Noir
+description: Ink-black stage with a faint dot screen, white-bordered prints, condensed headlines and a crimson accent. Monochrome, high-contrast, grainy.
+use: true crime, mysteries, investigations, cold war, disasters
+palette: {bg: "#0A0A0B", surface: "#141416", ink: "#F4F1EA", muted: "#9C978E", accent: "#D7263D", on_accent: "#FFFFFF", chart_base: "#2A2A2F"}
+fonts:
+  display: {family: Oswald, weight: 700, upper: true}
+  accent: {family: Playfair Display, weight: 600, italic: true}
+  body: {family: Inter, weight: 600}
+  numbers: {family: Oswald, weight: 700}
+grade: {saturation: 0.08, contrast: 1.18, brightness: 0.93, tint: "#2b1d14", tint_amount: 0.10}
+texture: {grain: 0.075, vignette: 0.62}
+background: {kind: dots, spacing: 46, dot: 1.6, opacity: 0.08, glow: "#1d1416"}
+frame: {style: print, border: 0.012, crop_marks: true, shadow: 0.65}
+captions: {style_long: boxed, style_short: pop, size_long: 50, size_short: 96, box: "#0A0A0BD9", ink: "#F4F1EA", highlight: accent}
+transitions: {default: crossfade, duration: 0.42}
+motion: {kenburns: 1.0}

@@ -1,0 +1,17 @@
+name: atlas
+label: Atlas
+description: Bright, clean explainer look. Off-white canvas, rounded photo cards with soft shadows, a cobalt accent and heavy grotesk type.
+use: explainers, geography, places, travel, education, how things work
+palette: {bg: "#F4F2EE", surface: "#FFFFFF", ink: "#14171C", muted: "#5B6370", accent: "#2D5BFF", on_accent: "#FFFFFF", chart_base: "#DCE1EA"}
+fonts:
+  display: {family: Inter Display, weight: 800}
+  accent: {family: Lora, weight: 600, italic: true}
+  body: {family: Inter, weight: 600}
+  numbers: {family: Inter Display, weight: 800}
+grade: {saturation: 1.02, contrast: 1.04, brightness: 1.0, tint: "#ffffff", tint_amount: 0.0}
+texture: {grain: 0.0, vignette: 0.25}
+background: {kind: gradient, glow: "#E3E8F5"}
+frame: {style: plain, border: 0.0, radius: 0.016, shadow: 0.35}
+captions: {style_long: boxed, style_short: pop, size_long: 50, size_short: 92, box: "#14171CE0", ink: "#FFFFFF", highlight: "#9DB5FF"}
+transitions: {default: crossfade, duration: 0.4}
+motion: {kenburns: 0.9}
