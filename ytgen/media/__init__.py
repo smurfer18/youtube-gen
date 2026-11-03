@@ -36,7 +36,7 @@ def register(name: str):
 
 
 def sources(settings: Settings) -> list[MediaSource]:
-    from ytgen.media import local, nasa, openverse, stock, wikimedia  # noqa: F401
+    from ytgen.media import archive, local, museums, nasa, openverse, stock, wikimedia  # noqa: F401
 
     out = []
     for name in settings.media_sources:

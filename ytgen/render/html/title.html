@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width={{W}}, height={{H}}">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<style>
+@font-face{font-family:'TDisplay';src:url('display.ttf')}
+@font-face{font-family:'TBody';src:url('body.ttf')}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:{{W}}px;height:{{H}}px;overflow:hidden;background:{{bg}}}
+#root{position:relative;width:100%;height:100%;overflow:hidden}
+#bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;filter:brightness(.38) saturate(.85)}
+#vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.75) 100%)}
+#sweep{position:absolute;top:-20%;left:0;width:{{sweepw}}px;height:140%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);transform:rotate(12deg);opacity:0}
+#wrap{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;padding:0 8%}
+#kicker{font-family:'TBody';color:{{accent}};font-size:{{kfs}}px;letter-spacing:.42em;text-transform:uppercase;opacity:0}
+#title{font-family:'TDisplay';color:{{ink}};font-size:{{tfs}}px;line-height:1.04;margin-top:{{gap}}px;{{upper}}}
+#title .w{display:inline-block;opacity:0;margin:0 .14em}
+#bar{height:{{bar}}px;width:0;background:{{accent}};margin:{{gap}}px auto 0}
+</style></head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="{{dur}}" data-width="{{W}}" data-height="{{H}}">
+  <img id="bg" class="clip" src="{{bgsrc}}" data-start="0" data-duration="{{dur}}" data-track-index="0">
+  <div id="vig" class="clip" data-start="0" data-duration="{{dur}}" data-track-index="1"></div>
+  <div id="sweep" class="clip" data-start="0" data-duration="{{dur}}" data-track-index="2"></div>
+  <div id="wrap" class="clip" data-start="0" data-duration="{{dur}}" data-track-index="3">
+    <div id="kicker">{{kicker}}</div>
+    <div id="title">{{words}}</div>
+    <div id="bar"></div>
+  </div>
+</div>
+<script>
+const D={{dur}};
+const tl=gsap.timeline({paused:true});
+tl.fromTo("#bg",{opacity:0,scale:1.12},{opacity:1,scale:1.0,duration:D,ease:"power1.out"},0);
+tl.fromTo("#kicker",{opacity:0,y:18},{opacity:1,y:0,duration:0.6,ease:"power3.out"},0.25);
+gsap.utils.toArray("#title .w").forEach((el,i)=>{
+  tl.fromTo(el,{opacity:0,y:46,scale:1.08},{opacity:1,y:0,scale:1,duration:0.7,ease:"power4.out"},0.45+i*0.09);
+});
+tl.fromTo("#bar",{width:0},{width:{{barw}},duration:0.8,ease:"power2.inOut"},0.9);
+tl.fromTo("#sweep",{opacity:0,x:-{{sweepw}}},{opacity:1,x:{{W}},duration:1.6,ease:"power2.inOut"},0.7);
+tl.to("#wrap",{opacity:0,y:-14,duration:0.5,ease:"power2.in"},D-0.55);
+window.__timelines=window.__timelines||{};window.__timelines["main"]=tl;tl.seek(0);
+</script>
+</body></html>

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from ytgen.config import Settings
 from ytgen.media import license_ok, register, strip_html
 from ytgen.models import Asset
@@ -46,6 +48,7 @@ class Wikimedia:
                 title=title, author=strip_html(m.get("Artist", {}).get("value", ""))[:120] or "Unknown",
                 license=lic, license_url=m.get("LicenseUrl", {}).get("value", ""),
                 page_url=ii.get("descriptionurl", ""), width=ii.get("width", 0), height=ii.get("height", 0),
+                thumb_url=re.sub(r"/\d+px-", "/330px-", ii.get("thumburl", "")) if "px-" in ii.get("thumburl", "") else "",
                 query=f"{title} {desc}",
             ))
         return out

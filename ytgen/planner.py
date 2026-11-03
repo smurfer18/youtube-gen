@@ -127,12 +127,44 @@ def _motion(i: int, rng: random.Random) -> Motion:
                   pan_to=(round(0.5 + dx / 2, 3), round(0.5 + dy / 2, 3)))
 
 
-def plan(script: Script, timing: Timing, settings: Settings, theme: dict) -> Plan:
+_CTX_SFX = [
+    (re.compile(r"^(explo\w*|blast\w*|bang|boom|detonat\w*|crash\w*)$", re.I), "impact", -7),
+    (re.compile(r"^(radio\w*|transmi\w*|houston|mayday|signal\w*)$", re.I), "radio", -12),
+    (re.compile(r"^(launch\w*|liftoff|lifted|rocket\w*|engines?|thunder\w*|roar\w*)$", re.I), "rumble", -8),
+    (re.compile(r"^(alarm\w*|warning|sirens?|alert\w*)$", re.I), "alarm", -14),
+    (re.compile(r"^(countdown|clock|ticking|seconds)$", re.I), "tick", -10),
+    (re.compile(r"^(camera|photograph\w*|snapshot|photo)$", re.I), "shutter", -10),
+]
+
+
+def _pick(weights: dict, rng: random.Random) -> str:
+    items = list(weights.items())
+    tot = sum(w for _, w in items) or 1
+    r = rng.random() * tot
+    for k, w in items:
+        r -= w
+        if r <= 0:
+            return k
+    return items[-1][0]
+
+
+def place_name(lower_third: str) -> str:
+    return re.split(r"\s[·|•–-]\s|·", lower_third)[0].strip()
+
+
+def plan(script: Script, timing: Timing, settings: Settings, theme: dict, preset: Optional[dict] = None) -> Plan:
+    from ytgen import presets as presets_mod
+
+    preset = preset or presets_mod.load("shorts" if settings.vertical else settings.preset_name)
     rng = random.Random(hash(script.title) & 0xFFFF)
     vertical = settings.vertical
     words = timing.words
-    shot_lo, shot_hi = (1.6, 3.0) if vertical else (3.6, 7.0)
-    g_max = 5.5 if vertical else 9.5
+    shot_lo, shot_hi = preset.get("shot_seconds", [3.6, 7.0])
+    if vertical and preset.get("name") != "shorts":
+        shot_lo, shot_hi = shot_lo * 0.5, shot_hi * 0.5
+    g_max = preset.get("graphic_max_seconds", 9.5)
+    g_gap = preset.get("graphic_gap_beats", 3)
+    trans_mix = preset.get("transitions", {"crossfade": 1.0})
     beats = [(ci, b) for ci, c in enumerate(script.chapters) for b in c.beats]
     by_beat: dict[int, list[Word]] = {}
     for w in words:
@@ -146,7 +178,7 @@ def plan(script: Script, timing: Timing, settings: Settings, theme: dict) -> Pla
     scenes: list[Scene] = []
     sfx: list[SfxCue] = []
     last_graphic_beat = -10
-    auto_ok = not any(b.graphic for _, b in beats)  # writer declared none: allow detection
+    auto_ok = preset.get("auto_graphics", True) and not any(b.graphic for _, b in beats)
     topic_kw = script.topic or script.title
 
     def add(kind, s, e, **kw) -> Scene:
@@ -160,20 +192,31 @@ def plan(script: Script, timing: Timing, settings: Settings, theme: dict) -> Pla
         s, e = starts[gi], ends[gi]
         text = beat.text
         g = beat.graphic
-        if g is None and auto_ok and gi - last_graphic_beat >= 3 and k not in (0, len(beat_ids) - 1):
+        if g is None and auto_ok and gi - last_graphic_beat >= g_gap and k not in (0, len(beat_ids) - 1):
             g = detect_graphic(text)
         query = beat.visual or " ".join(keywords(text, 3)) or topic_kw
         cursor = s
         first_scene_of_beat = None
+        lt_target = None  # scene that carries this beat's lower third
+
+        # a new place: fly the globe there before the footage (documentary maps)
+        if (beat.lower_third and preset.get("maps") and g is None and not vertical and e - s > 6.0
+                and place_name(beat.lower_third)):
+            m_end = min(e - 2.5, s + 4.2)
+            add("html", s, m_end, chapter=ci, text=text, query=query, transition="crossfade",
+                graphic=GraphicSpec(type="map", label=place_name(beat.lower_third), title=beat.lower_third))
+            sfx.append(SfxCue(t=s + 0.2, kind="whoosh", gain_db=-8))
+            cursor = m_end
 
         if g is not None:
             last_graphic_beat = gi
             # graphic covers the sentence(s) that state it, at least 3 s
             anchor_t = _word_time(bw, g.anchor) if g.anchor else None
-            g_start = s
-            if anchor_t is not None and anchor_t - s > 4.5:   # figure is late in a long beat: footage first
-                g_start = max(s, anchor_t - 1.2)
-                sc = add("footage", s, g_start, chapter=ci, text=text, query=query, motion=_motion(len(scenes), rng))
+            g_start = cursor
+            if anchor_t is not None and anchor_t - cursor > 4.5:   # figure is late in a long beat: footage first
+                g_start = max(cursor, anchor_t - 1.2)
+                sc = add("footage", cursor, g_start, chapter=ci, text=text, query=query, motion=_motion(len(scenes), rng),
+                         transition=_pick(trans_mix, rng))
                 first_scene_of_beat = sc
             g_end = min(e, g_start + g_max)
             if e - g_end < 2.0:
@@ -214,15 +257,25 @@ def plan(script: Script, timing: Timing, settings: Settings, theme: dict) -> Pla
                     if kw:
                         q = f"{' '.join(kw)} {topic_kw}"
                 sc = add("footage", a, b, chapter=ci, text=seg_text or text, query=q,
-                         motion=_motion(len(scenes), rng), transition="crossfade" if not vertical else "zoom")
+                         motion=_motion(len(scenes), rng), transition=_pick(trans_mix, rng))
                 first_scene_of_beat = first_scene_of_beat or sc
+                lt_target = lt_target or sc
                 if vertical:
                     sfx.append(SfxCue(t=a, kind="swish", gain_db=-9))
         elif scenes and cursor < e:
             scenes[-1].end = round(e, 3)
-        if beat.lower_third and first_scene_of_beat is not None:
-            first_scene_of_beat.lower_third = beat.lower_third
-            first_scene_of_beat.lower_third_at = 0.5
+        carrier = lt_target or first_scene_of_beat
+        if beat.lower_third and carrier is not None:
+            carrier.lower_third = beat.lower_third
+            carrier.lower_third_at = 0.5
+        # context-aware sound design on the words that call for it
+        if preset.get("context_sfx", True):
+            for w in bw:
+                key = re.sub(r"[^A-Za-z]", "", w.text)
+                for pat, kind, gain in _CTX_SFX:
+                    if pat.match(key) and (not sfx or all(abs(c.t - w.start) > 5 or c.kind != kind for c in sfx[-6:])):
+                        sfx.append(SfxCue(t=max(0.0, w.start - (0.15 if kind == "impact" else 0.05)), kind=kind, gain_db=gain))
+                        break
 
     _fix_continuity(scenes, timing.duration)
 
@@ -235,11 +288,21 @@ def plan(script: Script, timing: Timing, settings: Settings, theme: dict) -> Pla
         chapters.append(ChapterMark(title=ch.title, start=round(mark_t, 2)))
         nxt = timing.chapter_starts[ci + 1] - 1.25 if ci + 1 < len(timing.chapter_starts) else timing.duration
         music.append(MusicSection(start=round(mark_t, 2), end=round(nxt, 2), mood=ch.mood))
-        if ci == 0 or vertical:
+        if ci == 0 or vertical or not preset.get("chapter_cards", True):
             continue
+        if ci == 1 and preset.get("title_sequence") and timing.chapter_starts[1] - 1.25 - 2.0 > 0:
+            # title sequence in the silence after the cold open
+            prev_end = max((w.end for w in words if w.chapter == 0), default=0.0)
+            ts0, ts1 = prev_end + 0.35, mark_t
+            if ts1 - ts0 > 1.8:
+                _insert(scenes, Scene(index=0, kind="title", start=round(ts0, 3), end=round(ts1, 3), chapter=0,
+                                      title=script.title, subtitle=settings.channel_name, transition="dip",
+                                      query=topic_kw))
+                sfx.append(SfxCue(t=max(0, ts0 - 1.2), kind="riser", gain_db=-6))
+                sfx.append(SfxCue(t=ts0 + 0.1, kind="impact", gain_db=0))
         card_end = t0 + 2.4
         _insert(scenes, Scene(index=0, kind="chapter", start=round(mark_t, 3), end=round(card_end, 3), chapter=ci,
-                              title=ch.title, subtitle=f"Chapter {ci}", transition="dip"))
+                              title=ch.title, subtitle=f"Chapter {ci}", transition=preset.get("chapter_transition", "dip")))
         sfx.append(SfxCue(t=mark_t + 0.05, kind="impact", gain_db=-2))
         sfx.append(SfxCue(t=max(0, mark_t - 1.4), kind="riser", gain_db=-8))
 
@@ -257,15 +320,18 @@ def plan(script: Script, timing: Timing, settings: Settings, theme: dict) -> Pla
     emphasis = {norm_key(x) for _, b in beats for x in b.emphasis}
     captions = _phrases(words, vertical, emphasis)
     banner = None
-    if settings.subscribe_banner and not vertical and timing.duration > 60:
+    if settings.subscribe_banner and preset.get("subscribe_banner", True) and not vertical and timing.duration > 60:
         target = timing.duration * 0.22
         cands = [sc.start for sc in scenes if sc.kind == "footage" and sc.start > 20]
         banner = min(cands, key=lambda t: abs(t - target)) + 1.0 if cands else None
 
     return Plan(width=settings.width, height=settings.height, fps=settings.fps, duration=timing.duration,
-                theme=theme["name"], caption_style=settings.caption_style or theme["captions"]["style_" + ("short" if vertical else "long")],
+                theme=theme["name"],
+                caption_style=settings.caption_style or preset.get("captions") or theme["captions"]["style_" + ("short" if vertical else "long")],
                 scenes=scenes, captions=captions, sfx=sorted(sfx, key=lambda c: c.t), music=music,
-                chapters=chapters, banner_at=banner, channel_name=settings.channel_name)
+                chapters=chapters, banner_at=banner, channel_name=settings.channel_name, title=script.title,
+                extra={k: preset.get(k) for k in ("name", "letterbox", "camera_shake", "kenburns", "progress_bar",
+                                                  "music_db", "ambience", "ambience_db", "sfx_db")})
 
 
 def _graphic_beats(g: GraphicSpec, bw: list[Word], s: float, e: float, anchor_t: Optional[float]) -> list[float]:

@@ -231,3 +231,39 @@ def score(sections: list[MusicSection], duration: float, seed: int = 0) -> np.nd
     out[:, : int(0.8 * SR)] *= np.linspace(0, 1, int(0.8 * SR))
     peak = np.abs(out).max() or 1.0
     return out / peak * 0.7
+
+
+AMBIENCE = {  # mood -> (low-pass width (smoothing), drone Hz, wind modulation)
+    "tension": (60, 41.2, 0.25), "somber": (90, 55.0, 0.15), "wonder": (40, 0.0, 0.10),
+    "driving": (50, 49.0, 0.20), "uplifting": (35, 0.0, 0.08), "neutral": (70, 0.0, 0.12),
+}
+
+
+def ambience(sections: list[MusicSection], duration: float, seed: int = 0) -> np.ndarray:
+    """Room-tone / air bed under the whole film: filtered noise with slow movement,
+    a sub drone for darker moods. Glues cuts together and kills dead silence."""
+    total = int(duration * SR)
+    out = np.zeros((2, total), np.float32)
+    rng = np.random.default_rng(seed + 17)
+    xf = int(2.0 * SR)
+    for sec in sections:
+        a, b = int(sec.start * SR), min(total, int(sec.end * SR) + xf)
+        n = b - a
+        if n <= 0:
+            continue
+        smooth, drone, wind = AMBIENCE.get(sec.mood, AMBIENCE["neutral"])
+        k = np.ones(smooth, np.float32) / smooth
+        t = np.arange(n) / SR
+        mod = 1 + wind * np.sin(2 * np.pi * t / 7.3 + rng.random() * 6) + 0.5 * wind * np.sin(2 * np.pi * t / 3.1)
+        part = np.empty((2, n), np.float32)
+        for ch in range(2):
+            nz = np.convolve(rng.normal(0, 1, n).astype(np.float32), k, mode="same") * np.sqrt(smooth)
+            part[ch] = nz * mod
+        if drone:
+            part += 0.35 * np.sin(2 * np.pi * drone * t)[None, :] * (0.7 + 0.3 * np.sin(2 * np.pi * t / 11))[None, :]
+        env = np.ones(n, np.float32)
+        env[:min(xf, n)] = np.linspace(0, 1, min(xf, n))
+        env[-min(xf, n):] *= np.linspace(1, 0, min(xf, n))
+        out[:, a:b] += part * env
+    peak = np.abs(out).max() or 1.0
+    return out / peak * 0.6

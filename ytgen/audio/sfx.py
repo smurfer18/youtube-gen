@@ -75,6 +75,25 @@ def sound(kind: str) -> np.ndarray:
         tone = np.sin(2 * np.pi * np.cumsum(200 + 900 * t ** 2) / SR) * 0.15 * t ** 2
         x = x + tone
         st = np.stack([x, x])
+    elif kind == "radio":   # two-tone "quindar"-style chirp with a breath of static
+        n = int(0.55 * SR)
+        t = np.arange(n) / SR
+        tone = np.where(t < 0.25, np.sin(2 * np.pi * 2525 * t), np.sin(2 * np.pi * 2475 * t)) * (t < 0.5)
+        stat = _band_sweep(n, 1800, 2400, 1.5, 51) * 0.6
+        x = (tone * 0.5 + stat * np.exp(-t * 3)) * np.minimum(1, (0.55 - t) * 30)
+        st = np.stack([x, x])
+    elif kind == "rumble":  # low launch rumble that swells and fades
+        n = int(3.5 * SR)
+        t = np.linspace(0, 1, n)
+        base = np.convolve(_noise(n, 61), np.ones(900) / 900, mode="same") * 30
+        x = (base + 0.4 * np.sin(2 * np.pi * 38 * np.arange(n) / SR)) * np.sin(np.pi * t) ** 0.8
+        st = np.stack([x, np.roll(x, 400)])
+    elif kind == "alarm":   # master-alarm style beeps
+        n = int(1.2 * SR)
+        t = np.arange(n) / SR
+        gate = ((t % 0.3) < 0.15).astype(np.float32)
+        x = (np.sin(2 * np.pi * 1450 * t) + 0.3 * np.sin(2 * np.pi * 2900 * t)) * gate * np.exp(-t * 1.2)
+        st = np.stack([x, x])
     elif kind == "shutter":
         n = int(0.09 * SR)
         x = _noise(n, 41) * np.exp(-np.arange(n) / SR * 90)

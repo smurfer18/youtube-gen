@@ -1,0 +1,23 @@
+name: cinematic
+description: Feature-film feel. 2.39:1 letterbox, long slow moves, fades and light leaks, handheld drift in tense chapters, minimal captions, heavy grain, a full title sequence.
+shot_seconds: [5.0, 9.5]
+graphic_gap_beats: 6
+graphic_max_seconds: 8
+auto_graphics: true
+title_sequence: true
+title_gap: 4.5
+chapter_cards: true
+maps: true
+transitions: {crossfade: 0.55, light_leak: 0.2, zoom_through: 0.1, cut: 0.15}
+chapter_transition: dip
+letterbox: 2.39
+camera_shake: 1.0
+kenburns: 0.75
+context_sfx: true
+ambience: true
+music_db: -17
+ambience_db: -29
+sfx_db: -15
+subscribe_banner: false
+progress_bar: false
+captions: minimal

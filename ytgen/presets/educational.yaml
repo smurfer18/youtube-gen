@@ -1,0 +1,23 @@
+name: educational
+description: Explainer pacing. Frequent charts, lists and comparisons, maps for every place, crisp cuts and push transitions, bold boxed captions.
+shot_seconds: [3.0, 5.5]
+graphic_gap_beats: 2
+graphic_max_seconds: 10
+auto_graphics: true
+title_sequence: false
+title_gap: 1.25
+chapter_cards: true
+maps: true
+transitions: {cut: 0.45, crossfade: 0.3, push: 0.15, whip: 0.1}
+chapter_transition: push
+letterbox: 0
+camera_shake: 0.0
+kenburns: 0.8
+context_sfx: true
+ambience: false
+music_db: -21
+ambience_db: -36
+sfx_db: -13
+subscribe_banner: true
+progress_bar: true
+captions: boxed

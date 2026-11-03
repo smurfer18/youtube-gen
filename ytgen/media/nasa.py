@@ -41,6 +41,6 @@ class Nasa:
                 provider="NASA", title=data.get("title", nid)[:120],
                 author=data.get("photographer") or data.get("secondary_creator") or data.get("center") or "NASA",
                 license="Public domain (NASA)", license_url="https://www.nasa.gov/nasa-brand-center/images-and-media/",
-                page_url=f"https://images.nasa.gov/details/{nid}", query=f"{data.get('title','')} {data.get('description','')[:300]}",
+                page_url=f"https://images.nasa.gov/details/{nid}", thumb_url=f"https://images-assets.nasa.gov/image/{nid}/{nid}~thumb.jpg", query=f"{data.get('title','')} {data.get('description','')[:300]}",
             ))
         return out

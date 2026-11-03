@@ -231,11 +231,18 @@ class FootageCard(Renderer):
     def frame(self, lt: float) -> Image.Image:
         if not self.ok:
             return fx.make_background(self.th).copy()
-        f = self.back.copy()
+        q = fx.clamp(lt / self.dur)
+        # parallax: the blurred backdrop drifts and zooms one way, the print the other
+        z = 1.06 + 0.04 * q
+        bw, bh = self.W / z, self.H / z
+        dx = (0.5 - q) * (self.W - bw) * 0.9
+        f = self.back.resize((self.W, self.H), Image.BILINEAR,
+                             box=((self.W - bw) / 2 + dx, (self.H - bh) / 2, (self.W + bw) / 2 + dx, (self.H + bh) / 2))
         p = fx.ease_out(fx.progress(lt, 0.0, 0.65))
-        drift = 1.0 + 0.035 * fx.clamp(lt / self.dur)
+        drift = 1.0 + 0.035 * q
+        x = self.W / 2 + (q - 0.5) * self.th.s(36)
         y = self.H / 2 - (1 - p) * self.th.s(60) - self.th.s(20 if not self.th.vertical else 120)
-        fx.paste(f, self.card, (self.W / 2, y), opacity=min(1, p * 1.3), scale=drift, anchor="mm")
+        fx.paste(f, self.card, (x, y), opacity=min(1, p * 1.3), scale=drift, anchor="mm")
         return f
 
 
@@ -323,6 +330,60 @@ class Outro(Renderer):
         fx.paste(f, self.name, (self.W / 2, cy + (1 - p2) * th.s(30)), opacity=p2, anchor="mm")
         pulse = 1 + 0.025 * math.sin(lt * 4) * fx.progress(lt, 1.4, 0.3)
         fx.paste(f, self.btn, (self.W / 2, cy + th.s(130)), opacity=min(1, p3 * 1.2), scale=max(0.01, p3) * pulse, anchor="mm")
+        return f
+
+
+class HtmlClip(Renderer):
+    """A pre-rendered motion clip (HyperFrames / Playwright), played frame-accurately."""
+
+    def __init__(self, *a):
+        super().__init__(*a)
+        self.reader = VideoReader(self.sc.clip_path, self.W, self.H, self.plan.fps, self.dur + 1)
+
+    def frame(self, lt: float) -> Image.Image:
+        img = self.reader.frame(min(max(0.0, lt), self.dur - 0.5 / self.plan.fps))
+        return img.copy() if img is not None else fx.make_background(self.th).copy()
+
+    def close(self) -> None:
+        self.reader.close()
+
+
+class TitleCard(Renderer):
+    """Built-in title sequence (fallback when HyperFrames is unavailable)."""
+
+    def __init__(self, *a):
+        super().__init__(*a)
+        th = self.th
+        self.src = self.media.graded(self.sc.asset_id, 1.25) if self.sc.asset_id else None
+        title = self.sc.title.upper() if th.upper("display") else self.sc.title
+        f = fx.fit_font(th, "display", title, 120 if not th.vertical else 100, self.W * 0.84)
+        self.lines = [fx.text_layer(l, f, th.color("ink"), shadow_blur=th.s(18), shadow_opacity=0.55)
+                      for l in fx.wrap(title, f, self.W * 0.84, 3)]
+        self.kicker = fx.text_layer((self.sc.subtitle or "").upper(), th.font("body", 28), th.color("accent"), tracking=0.4)
+        self.dark = Image.new("RGB", (self.W, self.H), th.rgb("bg"))
+
+    def frame(self, lt: float) -> Image.Image:
+        th = self.th
+        if self.src is not None:
+            img = self.src
+            z = 1.12 - 0.08 * fx.ease_out(fx.clamp(lt / self.dur))
+            ar = self.W / self.H
+            bw = min(img.width, img.height * ar)
+            ww, hh = bw / z, bw / ar / z
+            x0, y0 = (img.width - ww) / 2, (img.height - hh) / 2
+            f = img.resize((self.W, self.H), Image.BILINEAR, box=(x0, y0, x0 + ww, y0 + hh))
+            f = Image.blend(f, self.dark, 0.66 - 0.06 * fx.progress(lt, 0, 1.2))
+        else:
+            f = fx.make_background(th).copy()
+        out = 1 - fx.ease_in_out(fx.progress(lt, self.dur - 0.6, 0.55))
+        fx.paste(f, self.kicker, (self.W / 2, self.H * 0.38), opacity=fx.ease_out(fx.progress(lt, 0.2, 0.6)) * out, anchor="mm")
+        y = self.H * 0.44
+        for i, l in enumerate(self.lines):
+            p = fx.ease_out(fx.progress(lt, 0.4 + i * 0.12, 0.7))
+            fx.paste(f, l, (self.W / 2, y + (1 - p) * th.s(46)), opacity=p * out, scale=1.06 - 0.06 * p, anchor="mt")
+            y += l.height * 0.95
+        rw = th.s(240) * fx.ease_in_out(fx.progress(lt, 0.9, 0.8)) * out
+        ImageDraw.Draw(f).rectangle((self.W / 2 - rw / 2, y + th.s(24), self.W / 2 + rw / 2, y + th.s(30)), fill=th.color("accent"))
         return f
 
 
@@ -725,6 +786,10 @@ GRAPHICS = {
 def make(sc: Scene, plan: Plan, th: Theme, media: MediaCache) -> Renderer:
     if sc.kind in ("graphic", "kinetic") and sc.graphic is not None:
         return GRAPHICS.get(sc.graphic.type, Kinetic)(sc, plan, th, media)
+    if sc.clip_path and sc.kind in ("html", "title"):
+        return HtmlClip(sc, plan, th, media)
+    if sc.kind == "title":
+        return TitleCard(sc, plan, th, media)
     if sc.kind == "chapter":
         return Chapter(sc, plan, th, media)
     if sc.kind == "outro":

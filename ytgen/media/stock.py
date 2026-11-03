@@ -39,7 +39,7 @@ class Pexels:
                     author=(v.get("user") or {}).get("name", "Pexels"), license="Pexels License",
                     license_url="https://www.pexels.com/license/", page_url=v.get("url", ""),
                     width=f.get("width") or 0, height=f.get("height") or 0, duration=v.get("duration") or 0,
-                    query=v.get("url", "").replace("-", " "),
+                    query=v.get("url", "").replace("-", " "), thumb_url=v.get("image", ""),
                 ))
         d = net.get_json("https://api.pexels.com/v1/search", headers=h, timeout=20,
                          params={"query": query, "orientation": orient, "per_page": limit})
@@ -49,6 +49,7 @@ class Pexels:
                 title=p.get("alt") or "", author=p.get("photographer", "Pexels"), license="Pexels License",
                 license_url="https://www.pexels.com/license/", page_url=p.get("url", ""),
                 width=p.get("width") or 0, height=p.get("height") or 0, query=p.get("alt") or "",
+                thumb_url=p["src"].get("medium", ""),
             ))
         return out
 
@@ -73,4 +74,5 @@ class Pixabay:
             author=h.get("user", "Pixabay"), license="Pixabay Content License",
             license_url="https://pixabay.com/service/license-summary/", page_url=h.get("pageURL", ""),
             width=h.get("imageWidth") or 0, height=h.get("imageHeight") or 0, query=h.get("tags", ""),
+            thumb_url=h.get("webformatURL", ""),
         ) for h in d.get("hits", [])]

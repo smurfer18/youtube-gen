@@ -1,0 +1,23 @@
+name: shorts
+description: Vertical, fast and loud. 1.6-3 s cuts with a sound on every cut, zoom punches, pop captions, a graphic every other beat.
+shot_seconds: [1.6, 3.0]
+graphic_gap_beats: 2
+graphic_max_seconds: 5.5
+auto_graphics: true
+title_sequence: false
+title_gap: 0.0
+chapter_cards: false
+maps: false
+transitions: {zoom: 0.6, cut: 0.25, whip: 0.15}
+chapter_transition: zoom
+letterbox: 0
+camera_shake: 0.0
+kenburns: 1.25
+context_sfx: true
+ambience: false
+music_db: -17
+ambience_db: -36
+sfx_db: -11
+subscribe_banner: false
+progress_bar: false
+captions: pop

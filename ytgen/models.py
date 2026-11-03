@@ -22,9 +22,10 @@ GraphicType = Literal[
     "quote",        # a pull quote with attribution
     "compare",      # this vs that, two columns
     "kinetic",      # animated keywords (typography scene)
+    "map",          # 3D globe flies to a place (HTML/GSAP via HyperFrames)
 ]
 
-SceneKind = Literal["footage", "graphic", "chapter", "kinetic", "title", "outro"]
+SceneKind = Literal["footage", "graphic", "chapter", "kinetic", "title", "outro", "html"]
 
 
 # ----------------------------------------------------------------- script ----
@@ -48,6 +49,8 @@ class GraphicSpec(BaseModel):
     unit: str = ""
     source: str = ""                 # "Source: NASA" footer
     anchor: str = ""                 # word in the narration the beat lands on
+    lat: Optional[float] = None      # map: target location (geocoded from `label` if missing)
+    lon: Optional[float] = None
 
 
 class Beat(BaseModel):
@@ -138,6 +141,15 @@ class Asset(BaseModel):
     query: str = ""
     score: float = 0.0
     duration: float = 0.0          # videos
+    thumb_url: str = ""            # small preview used for semantic ranking
+    license_status: str = ""       # public_domain | cc0 | attribution | share_alike | platform | owned | ai_generated | uncertain | rejected
+    attribution_required: bool = False
+    commercial_ok: bool = True
+    sha1: str = ""
+    phash: str = ""                # perceptual hash (near-duplicate detection)
+    semantic: Optional[float] = None  # CLIP text-image similarity to the scene query
+    generated: bool = False        # AI-generated image
+    cost_usd: float = 0.0
 
 
 class Motion(BaseModel):
@@ -169,6 +181,7 @@ class Scene(BaseModel):
     beat_times: list[float] = Field(default_factory=list)  # absolute times graphic beats land
     motion: Motion = Field(default_factory=Motion)
     transition: str = "crossfade"
+    clip_path: str = ""              # html scenes: pre-rendered clip (HyperFrames)
     needs_review: bool = False
     review_reason: str = ""
 
@@ -222,3 +235,5 @@ class Plan(BaseModel):
     chapters: list[ChapterMark] = Field(default_factory=list)
     banner_at: Optional[float] = None   # subscribe banner time
     channel_name: str = ""
+    title: str = ""
+    extra: dict = Field(default_factory=dict)  # editing-preset render options (letterbox, shake, ...)

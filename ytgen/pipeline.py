@@ -23,7 +23,7 @@ from ytgen.util import log
 from ytgen.util.text import slugify
 
 L = log.get("pipeline")
-STAGES = ["research", "script", "voice", "plan", "media", "storyboard", "audio", "render", "package"]
+STAGES = ["research", "script", "voice", "plan", "media", "storyboard", "audio", "render", "package", "qc"]
 
 
 @dataclass
@@ -72,6 +72,11 @@ class Project:
     def theme_data(self) -> dict:
         return theme_mod.load(self.theme)
 
+    def preset(self) -> dict:
+        from ytgen import presets
+        return presets.load("shorts" if self.settings.vertical and self.settings.preset_name == "documentary"
+                            else self.settings.preset_name)
+
 
 def _write(path: Path, model) -> None:
     path.write_text(model.model_dump_json(indent=2), encoding="utf-8")
@@ -94,7 +99,8 @@ def create(topic: str, settings: Settings, root: Path, script_file: Optional[Pat
     return proj
 
 
-def run(proj: Project, stop_after: Optional[str] = None, force: tuple[str, ...] = ()) -> Project:
+def run(proj: Project, stop_after: Optional[str] = None, force: tuple[str, ...] = (),
+        chapters: Optional[set[int]] = None, export_chapters: bool = False) -> Project:
     s = proj.settings
     force_set = set(force)
     if "all" in force_set:
@@ -117,7 +123,7 @@ def run(proj: Project, stop_after: Optional[str] = None, force: tuple[str, ...] 
         rpath = proj.dir / "research.json"
         res = Research(topic=proj.topic)
         if s.research:
-            res = research(proj.topic, s.language)
+            res = research(proj.topic, s.language, 4 if s.target_minutes > 12 and not s.vertical else 2)
             rpath.write_text(json.dumps({"topic": res.topic, "articles": [
                 {"title": a.title, "url": a.url, "summary": a.summary, "sections": [[x.heading, x.text] for x in a.sections]}
                 for a in res.articles]}, indent=2))
@@ -136,7 +142,9 @@ def run(proj: Project, stop_after: Optional[str] = None, force: tuple[str, ...] 
     # ---------------------------------------------------------------- voice
     if not proj.timing_path.exists() or stage("voice"):
         from ytgen.voice import narrate
-        timing = narrate(script, s, proj.dir / "voice")
+        pre = proj.preset()
+        tg = pre.get("title_gap", 0.0) if pre.get("title_sequence") and not s.vertical and len(script.chapters) > 1 else 0.0
+        timing = narrate(script, s, proj.dir / "voice", title_gap=tg)
         _write(proj.timing_path, timing)
     timing = proj.load_timing()
     if done("voice"):
@@ -147,11 +155,13 @@ def run(proj: Project, stop_after: Optional[str] = None, force: tuple[str, ...] 
     if not proj.plan_path.exists() or stage("plan") or stage("media"):
         from ytgen import planner
         from ytgen.media.select import assign_media
-        plan = planner.plan(script, timing, s, tdata)
+        plan = planner.plan(script, timing, s, tdata, proj.preset())
         _write(proj.dir / "plan.draft.json", plan)  # plan.json only once shots are assigned
         if done("plan"):
             return proj
-        plan = assign_media(plan, script, s, proj.dir)
+        plan = assign_media(plan, script, s, proj.dir, tdata)
+        from ytgen.render.html import prerender
+        plan = prerender(plan, tdata, proj.dir)  # HyperFrames / Playwright motion clips
         _write(proj.plan_path, plan)
     plan = proj.load_plan()
     if done("media"):
@@ -177,9 +187,16 @@ def run(proj: Project, stop_after: Optional[str] = None, force: tuple[str, ...] 
     # --------------------------------------------------------------- render
     stem = slugify(script.title, 80)
     video = proj.out_dir / f"{stem}.mp4"
+    if chapters is not None:  # independent chapter render/preview, no assembly
+        from ytgen.render import compositor
+        compositor.render(plan, tdata, proj.dir / "render", mix_path, video, s.workers, s.crf, s.encoder_preset,
+                          chapters=chapters, export_chapters=True)
+        return proj
     if not video.exists() or stage("render") or stage("audio") or stage("plan") or stage("media"):
         from ytgen.render import compositor
-        compositor.render(plan, tdata, proj.dir / "render", mix_path, video, s.workers, s.crf, s.preset)
+        # chunk cache makes this incremental: only chunks whose inputs changed are drawn
+        compositor.render(plan, tdata, proj.dir / "render", mix_path, video, s.workers, s.crf, s.encoder_preset,
+                          export_chapters=export_chapters)
     if done("render"):
         return proj
 
@@ -187,6 +204,15 @@ def run(proj: Project, stop_after: Optional[str] = None, force: tuple[str, ...] 
     from ytgen.package import seo, thumbnails
     thumbnails.make_thumbnails(plan, script, tdata, proj.out_dir, s.thumbnails)
     seo.write_pack(script, plan, timing, proj.out_dir, stem, s.language)
-    done("package")
-    L.info("done: %s", video)
+    try:
+        from ytgen.media import manifest
+        manifest.write(plan, proj.out_dir)
+    except ImportError:
+        pass
+    if done("package"):
+        return proj
+    from ytgen import qc
+    report = qc.run(proj.dir, video)
+    done("qc")
+    L.info("done: %s (QC %s)", video, report["verdict"])
     return proj

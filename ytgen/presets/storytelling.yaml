@@ -1,0 +1,22 @@
+name: storytelling
+description: Narrative-first. Longer, breathing shots, warm light leaks, few graphics, quote cards, slower music swells.
+shot_seconds: [4.5, 8.5]
+graphic_gap_beats: 5
+graphic_max_seconds: 8
+auto_graphics: true
+title_sequence: true
+title_gap: 4.0
+chapter_cards: true
+maps: true
+transitions: {crossfade: 0.7, light_leak: 0.18, zoom_through: 0.06, cut: 0.06}
+chapter_transition: dip
+letterbox: 0
+camera_shake: 0.0
+kenburns: 0.85
+context_sfx: true
+ambience: true
+music_db: -18
+ambience_db: -30
+sfx_db: -16
+subscribe_banner: true
+progress_bar: false

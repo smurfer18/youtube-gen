@@ -36,7 +36,7 @@ class Openverse:
                 id=f"ov-{r['id']}", url=r["url"], provider=f"Openverse / {r.get('provider', '')}",
                 title=(r.get("title") or "")[:120], author=r.get("creator") or "Unknown", license=lic,
                 license_url=r.get("license_url", ""), page_url=r.get("foreign_landing_url", ""),
-                width=r.get("width") or 0, height=r.get("height") or 0,
+                width=r.get("width") or 0, height=r.get("height") or 0, thumb_url=r.get("thumbnail") or "",
                 query=f"{r.get('title','')} {' '.join(t.get('name','') for t in r.get('tags') or [])}",
             ))
         return out

@@ -98,7 +98,7 @@ class Overlays:
 
     # ------------------------------------------------------- progress bar --
     def _draw_progress(self, frame: Image.Image, t: float) -> None:
-        if self.th.vertical or len(self.plan.chapters) < 3:
+        if self.th.vertical or len(self.plan.chapters) < 3 or self.plan.extra.get("progress_bar") is False:
             return
         th = self.th
         d = ImageDraw.Draw(frame, "RGBA")
@@ -110,8 +110,8 @@ class Overlays:
             x0 = a / dur * th.W + (gap / 2 if a > 0 else 0)
             x1 = b / dur * th.W - gap / 2
             d.rectangle((x0, 0, x1, h), fill=(255, 255, 255, 46))
-            if t > a:
-                xf = min(x1, t / dur * th.W)
+            xf = min(x1, t / dur * th.W)
+            if xf > x0:
                 d.rectangle((x0, 0, xf, h), fill=th.color("accent", 230))
 
     def draw(self, frame: Image.Image, t: float) -> None:

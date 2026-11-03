@@ -78,6 +78,33 @@ SCRIPT_SCHEMA = _obj({
     "sources": {"type": "array", "items": _obj({"title": {"type": "string"}, "url": {"type": "string"}})},
 })
 
+BEAT_SCHEMA = _obj({
+    "text": {"type": "string"},
+    "visual": {"type": "string"},
+    "lower_third": _nullable({"type": "string"}),
+    "emphasis": {"type": "array", "items": {"type": "string"}},
+    "graphic": _nullable(GRAPHIC_SCHEMA),
+})
+
+OUTLINE_SCHEMA = _obj({
+    "title": {"type": "string"},
+    "title_options": {"type": "array", "items": {"type": "string"}},
+    "thumbnail_text": {"type": "string"},
+    "description": {"type": "string"},
+    "tags": {"type": "array", "items": {"type": "string"}},
+    "chapters": {"type": "array", "items": _obj({
+        "title": {"type": "string"},
+        "mood": {"type": "string", "enum": MOODS},
+        "purpose": {"type": "string"},
+        "key_facts": {"type": "array", "items": {"type": "string"}},
+        "ends_on": {"type": "string"},
+        "words": {"type": "integer"},
+    })},
+    "sources": {"type": "array", "items": _obj({"title": {"type": "string"}, "url": {"type": "string"}})},
+})
+
+CHAPTER_SCHEMA = _obj({"beats": {"type": "array", "items": BEAT_SCHEMA}, "summary": {"type": "string"}})
+
 FIX_SCHEMA = _obj({
     "fixes": {"type": "array", "items": _obj({
         "chapter": {"type": "integer"},
@@ -178,6 +205,8 @@ class ClaudeWriter:
             + (f"Research documents (the only allowed source of facts):\n\n{docs}" if docs else
                "No research documents were provided: use only well-established facts.")
         )
+        if settings.format != "short" and settings.target_minutes > 12:
+            return self.write_long(topic, research, settings, words, docs)
         L.info("writing with %s (%d target words)", settings.claude_model, words)
         data = _call_json(settings, SYSTEM, user, SCRIPT_SCHEMA)
         data["topic"] = topic
@@ -186,6 +215,50 @@ class ClaudeWriter:
         if settings.fact_check and docs:
             script = self.fact_check(script, docs, settings)
         L.info("script: %d chapters, %d words", len(script.chapters), script.word_count())
+        return script
+
+    def write_long(self, topic: str, research: Research, settings: Settings, words: int, docs: str) -> Script:
+        """Outline first, then chapter by chapter with a running memory, so 20-60 minute
+        scripts keep one narrative arc and never repeat a fact or a scene."""
+        n_ch = max(5, min(18, round(settings.target_minutes / 2.2)))
+        src = f"Research documents (the only allowed source of facts):\n\n{docs}" if docs else \
+            "No research documents: use only well-established facts."
+        outline = _call_json(settings, SYSTEM, (
+            f"Topic: {topic}\nLanguage: {settings.language}\nPlan a {settings.target_minutes:g}-minute documentary "
+            f"(about {words} narration words) as {n_ch} chapters. The first chapter is a 60-90 second cold open "
+            "that hooks with the most dramatic moment; the rest follow a single narrative arc with rising stakes, "
+            "a midpoint turn and a payoff. For each chapter give its purpose in the story, the specific facts it "
+            "will use (no fact may appear in two chapters), the open loop it ends on, and its word budget "
+            f"(budgets must add up to about {words}).\n\n{src}"), OUTLINE_SCHEMA, 32000)
+        plan_txt = "\n".join(f"{i}. {c['title']} [{c['mood']}] ({c['words']} words): {c['purpose']} | facts: "
+                              f"{'; '.join(c['key_facts'])} | ends on: {c['ends_on']}" for i, c in enumerate(outline["chapters"]))
+        chapters, memory, used_facts = [], [], []
+        for i, ch in enumerate(outline["chapters"]):
+            L.info("chapter %d/%d: %s", i + 1, len(outline["chapters"]), ch["title"])
+            data = _call_json(settings, SYSTEM, (
+                f"Documentary: {outline['title']}\nFull outline:\n{plan_txt}\n\n"
+                f"Story so far (do not repeat any of it):\n" + ("\n".join(memory) or "(this is the opening)") +
+                f"\n\nFacts already used: {'; '.join(used_facts) or 'none'}\n\n"
+                f"Now write chapter {i}: '{ch['title']}' — about {ch['words']} words of narration as beats "
+                f"(each 1-4 sentences with its visual query and optional graphic/lower third). Use the chapter's "
+                f"planned facts, end on: {ch['ends_on']}."
+                + (" This is the final chapter: land the payoff and end with a one-sentence call to subscribe."
+                   if i == len(outline["chapters"]) - 1 else "")
+                + f"\n\n{src}"), CHAPTER_SCHEMA, 32000)
+            chapters.append({"title": ch["title"], "mood": ch["mood"], "beats": data["beats"]})
+            memory.append(f"Ch.{i} {ch['title']}: {data['summary']}")
+            used_facts += ch["key_facts"]
+        script = Script.model_validate({**{k: outline[k] for k in ("title", "title_options", "thumbnail_text",
+                                                                      "description", "tags", "sources")},
+                                        "topic": topic, "language": settings.language, "chapters": chapters})
+        script = dedupe(script)
+        if settings.fact_check and docs:
+            for ci in range(len(script.chapters)):  # chapter-sized checks keep each call focused
+                part = Script(title=script.title, chapters=[script.chapters[ci]])
+                fixed = self.fact_check(part, docs, settings)
+                script.chapters[ci] = fixed.chapters[0]
+                script.notes += [n.replace("[0.", f"[{ci}.") for n in fixed.notes]
+        L.info("long-form script: %d chapters, %d words", len(script.chapters), script.word_count())
         return script
 
     def fact_check(self, script: Script, docs: str, settings: Settings) -> Script:
@@ -210,3 +283,27 @@ class ClaudeWriter:
             script.notes.append(f"fact-check [{f['chapter']}.{f['beat']}]: {f['problem']}")
         L.info("fact-check applied %d fixes", len(fixes))
         return script
+
+
+def _shingles(text: str, n: int = 5) -> set:
+    w = [x.lower().strip(".,;:!?\"'") for x in text.split()]
+    return {" ".join(w[i:i + n]) for i in range(max(0, len(w) - n + 1))}
+
+
+def dedupe(script: Script, threshold: float = 0.5) -> Script:
+    """Drop beats that largely repeat an earlier beat (5-word shingle overlap)."""
+    seen: set = set()
+    dropped = 0
+    for ch in script.chapters:
+        keep = []
+        for b in ch.beats:
+            sh = _shingles(b.text)
+            if sh and len(sh & seen) / len(sh) > threshold:
+                dropped += 1
+                continue
+            seen |= sh
+            keep.append(b)
+        ch.beats = keep or ch.beats[:1]
+    if dropped:
+        script.notes.append(f"dedupe: removed {dropped} repetitive beats")
+    return script

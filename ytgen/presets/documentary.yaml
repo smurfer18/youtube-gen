@@ -1,0 +1,22 @@
+name: documentary
+description: Classic YouTube documentary. Measured cuts, photo prints, data graphics on figures, chapter cards, globe flights for new places, a title sequence after the cold open.
+shot_seconds: [3.6, 7.0]
+graphic_gap_beats: 3
+graphic_max_seconds: 9.5
+auto_graphics: true
+title_sequence: true
+title_gap: 3.6
+chapter_cards: true
+maps: true
+transitions: {crossfade: 0.62, cut: 0.22, whip: 0.08, light_leak: 0.08}
+chapter_transition: dip
+letterbox: 0
+camera_shake: 0.0
+kenburns: 1.0
+context_sfx: true
+ambience: true
+music_db: -19
+ambience_db: -31
+sfx_db: -14
+subscribe_banner: true
+progress_bar: true

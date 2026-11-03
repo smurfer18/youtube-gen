@@ -1,0 +1,57 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+html,body{margin:0;width:{{W}}px;height:{{H}}px;overflow:hidden;background:{{bg}};font-family:'{{font}}',Inter,sans-serif}
+canvas{position:absolute;inset:0}
+#card{position:absolute;left:50%;top:{{cardTop}}%;transform:translate(-50%,0);opacity:0;text-align:center;color:{{ink}}}
+#card .k{font-size:{{fs1}}px;font-weight:800;letter-spacing:.02em;text-shadow:0 4px 24px rgba(0,0,0,.6)}
+#card .s{font-size:{{fs2}}px;color:{{muted}};margin-top:6px}
+#card .bar{width:0;height:{{bar}}px;background:{{accent}};margin:14px auto 0}
+</style>
+<script>{{D3}}</script><script>{{TOPO}}</script>
+</head><body>
+<canvas id="c" width="{{W}}" height="{{H}}"></canvas>
+<div id="card"><div class="k">{{label}}</div><div class="s">{{sub}}</div><div class="bar"></div></div>
+<script>
+const W={{W}},H={{H}},DUR={{dur}},TARGET=[{{lon}},{{lat}}];
+const world={{WORLD}};
+const land=topojson.feature(world,world.objects.countries);
+const borders=topojson.mesh(world,world.objects.countries,(a,b)=>a!==b);
+const hit=land.features.find(f=>d3.geoContains(f,TARGET));
+const ctx=document.getElementById('c').getContext('2d');
+const R0=Math.min(W,H)*0.36, R1=Math.min(W,H)*{{zoom}};
+const start=[TARGET[0]-70,Math.max(-20,Math.min(20,TARGET[1]*0.3))];
+const proj=d3.geoOrthographic().clipAngle(90).precision(0.3);
+const path=d3.geoPath(proj,ctx);
+const grat=d3.geoGraticule10();
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const stars=[...Array(220)].map((_,i)=>[(Math.sin(i*12.9898)*43758.5453%1+1)%1*W,(Math.sin(i*78.233)*12345.678%1+1)%1*H,((i*37)%10)/10]);
+window.renderAt=function(t){
+  const fly=ease(clamp(t/(DUR*0.62)));
+  const rot=[-(start[0]+(TARGET[0]-start[0])*fly), -(start[1]+(TARGET[1]-start[1])*fly)];
+  const r=R0+(R1-R0)*ease(clamp((t-DUR*0.15)/(DUR*0.55)));
+  proj.rotate(rot).scale(r).translate([W/2,H*{{cy}}]);
+  ctx.fillStyle='{{bg}}';ctx.fillRect(0,0,W,H);
+  for(const s of stars){ctx.globalAlpha=0.25+0.5*s[2];ctx.fillStyle='#cfe3ff';ctx.fillRect(s[0],s[1],1.4,1.4)}
+  ctx.globalAlpha=1;
+  const g=ctx.createRadialGradient(W/2,H*{{cy}},r*0.9,W/2,H*{{cy}},r*1.18);g.addColorStop(0,'{{accent}}55');g.addColorStop(1,'transparent');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(W/2,H*{{cy}},r*1.18,0,7);ctx.fill();
+  ctx.beginPath();path({type:'Sphere'});ctx.fillStyle='{{ocean}}';ctx.fill();
+  ctx.beginPath();path(grat);ctx.strokeStyle='{{ink}}14';ctx.lineWidth=1;ctx.stroke();
+  ctx.beginPath();path(land);ctx.fillStyle='{{landc}}';ctx.fill();
+  ctx.beginPath();path(borders);ctx.strokeStyle='{{bg}}aa';ctx.lineWidth=0.8;ctx.stroke();
+  if(hit){const a=clamp((t-DUR*0.45)/0.6)*0.5;ctx.globalAlpha=a;ctx.beginPath();path(hit);ctx.fillStyle='{{accent}}';ctx.fill();ctx.globalAlpha=1;}
+  const p=proj(TARGET), vis=d3.geoDistance(TARGET,[-rot[0],-rot[1]])<1.5;
+  const pin=clamp((t-DUR*0.55)/0.35);
+  if(p&&vis&&pin>0){
+    const pul=(t*1.4)%1;
+    ctx.beginPath();ctx.arc(p[0],p[1],12+pul*60,0,7);ctx.strokeStyle='{{accent}}';ctx.globalAlpha=(1-pul)*pin;ctx.lineWidth=4;ctx.stroke();ctx.globalAlpha=1;
+    ctx.beginPath();ctx.arc(p[0],p[1],14*pin,0,7);ctx.fillStyle='#fff';ctx.fill();
+    ctx.beginPath();ctx.arc(p[0],p[1],8*pin,0,7);ctx.fillStyle='{{accent}}';ctx.fill();
+  }
+  const ca=clamp((t-DUR*0.6)/0.5), card=document.getElementById('card');
+  card.style.opacity=ca;card.style.transform=`translate(-50%,${(1-ca)*20}px)`;
+  card.querySelector('.bar').style.width=(ca*{{barw}})+'px';
+};
+window.renderAt(0);
+</script></body></html>

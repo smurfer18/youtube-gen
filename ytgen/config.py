@@ -12,7 +12,9 @@ from pydantic import BaseModel, Field
 
 class Settings(BaseModel):
     # what to make
-    format: Literal["long", "short"] = "long"
+    format: Literal["long", "short", "square"] = "long"
+    resolution: int = 1080               # short side in pixels: 720, 1080, 1440, 2160 (4K)
+    preset_name: str = "documentary"     # editing preset (see `ytgen presets`)
     target_minutes: float = 8.0          # long-form target; shorts aim for ~50 s
     language: str = "en"
     theme: str = "auto"                  # theme name or "auto" (picked from the topic)
@@ -24,8 +26,12 @@ class Settings(BaseModel):
     voice: str = "edge:en-US-AndrewMultilingualNeural"
     voice_rate: str = "+0%"
     media_sources: list[str] = Field(
-        default_factory=lambda: ["wikimedia", "nasa", "pexels", "pixabay"]
+        default_factory=lambda: ["wikimedia", "nasa", "archive", "pexels", "pixabay", "unsplash", "smithsonian"]
     )
+    semantic: bool = True                # CLIP re-ranking of candidate shots
+    allow_uncertain_licenses: bool = False
+    ai_images: str = "pollinations"      # off | pollinations (free) | openai | replicate (paid, budget-gated)
+    ai_budget_usd: float = 0.0           # hard cap for paid generation per project
     research: bool = True
     fact_check: bool = True
 
@@ -36,8 +42,8 @@ class Settings(BaseModel):
     # render
     fps: int = 30
     workers: int = Field(default_factory=lambda: max(1, (os.cpu_count() or 2)))
-    crf: int = 18
-    preset: str = "fast"
+    crf: int = 17
+    encoder_preset: str = "veryfast"     # x264 speed/size trade-off
     music: bool = True
     music_db: float = -19.0
     sfx: bool = True
@@ -54,15 +60,25 @@ class Settings(BaseModel):
 
     @property
     def width(self) -> int:
-        return 1920 if self.format == "long" else 1080
+        r = self.resolution
+        return _even(r * 16 / 9) if self.format == "long" else r
 
     @property
     def height(self) -> int:
-        return 1080 if self.format == "long" else 1920
+        r = self.resolution
+        return _even(r * 16 / 9) if self.format == "short" else r
 
     @property
     def vertical(self) -> bool:
         return self.format == "short"
+
+    @property
+    def square(self) -> bool:
+        return self.format == "square"
+
+
+def _even(x: float) -> int:
+    return int(round(x / 2)) * 2
 
 
 ENV_KEYS = {

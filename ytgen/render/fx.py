@@ -72,13 +72,14 @@ def vignette(w: int, h: int, strength: float) -> Image.Image:
 
 
 @functools.lru_cache(maxsize=4)
-def _grain_tiles(w: int, h: int, amount: float, n: int = 6) -> list[np.ndarray]:
+def _grain_tiles(w: int, h: int, amount: float, n: int = 6) -> list[Image.Image]:
+    """Pre-baked RGB noise centred on 128 (added in C via ImageChops.add with offset)."""
     rng = np.random.default_rng(7)
     tiles = []
     for _ in range(n):
-        g = rng.normal(0, 255 * amount, (h // 2, w // 2)).astype(np.float32)
-        g = np.repeat(np.repeat(g, 2, axis=0), 2, axis=1)[:h, :w]
-        tiles.append(g.astype(np.int16)[:, :, None])
+        g = rng.normal(128, 255 * amount, (h // 2 + 1, w // 2 + 1)).clip(0, 255).astype(np.uint8)
+        im = Image.fromarray(g, "L").resize((w, h), Image.NEAREST).convert("RGB")
+        tiles.append(im)
     return tiles
 
 
@@ -89,10 +90,8 @@ def post(frame: Image.Image, theme: Theme, fi: int) -> Image.Image:
         frame = ImageChops.multiply(frame, vignette(frame.width, frame.height, v))
     g = tx.get("grain", 0)
     if g > 0:
-        arr = np.asarray(frame, dtype=np.int16)
-        tile = _grain_tiles(frame.width, frame.height, g)[fi % 6]
-        arr = np.clip(arr + tile, 0, 255).astype(np.uint8)
-        frame = Image.fromarray(arr, "RGB")
+        # grain at 15 fps with ~60% amplitude: reads as film, costs far fewer bits
+        frame = ImageChops.add(frame, _grain_tiles(frame.width, frame.height, g * 0.6)[(fi // 2) % 6], 1.0, -128)
     return frame
 
 

@@ -86,7 +86,7 @@ def _trim(pcm: np.ndarray, words: list[tuple[float, float, str]], pad: float = 0
     return pcm[int(a * SR):int(b * SR)], a
 
 
-def narrate(script: Script, settings: Settings, out_dir: Path) -> Timing:
+def narrate(script: Script, settings: Settings, out_dir: Path, title_gap: float = 0.0) -> Timing:
     out_dir.mkdir(parents=True, exist_ok=True)
     voice = get_voice(settings.voice, settings)
     beats = [(ci, b) for ci, c in enumerate(script.chapters) for b in c.beats]
@@ -107,9 +107,10 @@ def narrate(script: Script, settings: Settings, out_dir: Path) -> Timing:
     prev_ch = -1
     for gi, ((ci, beat), clip) in enumerate(zip(beats, clips)):
         if ci != prev_ch:
-            if prev_ch >= 0 and chapter_gap:
-                parts.append(np.zeros(int(chapter_gap * SR), np.float32))
-                t += chapter_gap
+            gap = chapter_gap + (title_gap if prev_ch == 0 else 0.0)
+            if prev_ch >= 0 and gap:
+                parts.append(np.zeros(int(gap * SR), np.float32))
+                t += gap
             chapter_starts.append(t)
             prev_ch = ci
         elif gi:
